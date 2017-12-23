@@ -28,8 +28,8 @@ class Engine():
 
 
     def handle(self,face_encodings, timestamp):
-        face_names = self._process_face_recognition_results_(face_encodings, timestamp)
-        return face_names
+        face_names, is_new = self._process_face_recognition_results_(face_encodings, timestamp)
+        return face_names, is_new
 
     def is_new_face(self, face_uuid):
         return face_uuid not in self.faces
@@ -42,7 +42,8 @@ class Engine():
         face_entry.image = image
 
     def persist(self, face_uuid, file_path):
-        face_entry_persistent = FaceEntry(uuid=face_uuid, face_encoding_json=json.dumps(self.faces[face_uuid]),
+        face_entry_persistent = FaceEntry(uuid=face_uuid,
+                                          face_encoding_json=json.dumps(self.faces[face_uuid].face_encoding.tolist()),
                                           image=file_path)
         face_entry_persistent.save()
         logger.debug('Saved new FaceEntry')
@@ -58,6 +59,7 @@ class Engine():
         return file_path
 
     def _process_face_recognition_results_(self,face_encodings, timestamp):
+        is_new = None
         face_names = {}
         for face_encoding in face_encodings:
             # See if the face is a match for the known face(s)
@@ -76,13 +78,15 @@ class Engine():
                 name = "Known"
                 face_names[matched_uuids[0]] = name
                 logger.debug('Matched uuid: ' + str(matched_uuids))
+                is_new = False
             else:
                 uuid_for_face = self.__add_to_known_faces_dict__(face_encoding, timestamp)
 
                 face_names[uuid_for_face] = name
                 logger.debug('Created new uuid: ' + str(uuid_for_face))
+                is_new = True
 
-        return face_names
+        return face_names, is_new
 
     def __get_match_uuid__(self, match):
         matched_uuid_list = []

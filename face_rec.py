@@ -37,7 +37,7 @@ def main():
                 face_encodings = face_recognition.face_encodings(small_frame, face_locations)
 
                 timestamp = time.time()
-                face_names = engine.handle(face_encodings,timestamp)
+                face_names, is_new = engine.handle(face_encodings,timestamp)
 
             process_this_frame = not process_this_frame
 
@@ -62,7 +62,7 @@ def main():
                 cv2.imshow(name + str(face_uuid), crop_img)
 
                 #print((top, right, bottom, left))
-                if engine.is_new_face(face_uuid):
+                if is_new:
                     #SAVE FACE
                     file_path = engine.save_to_file(face_uuid, crop_img)
                     engine.persist(face_uuid, file_path)

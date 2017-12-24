@@ -31,6 +31,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'bsct',
     'fdr_backend.apps.FdrBackendConfig',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -126,3 +127,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.0/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = "localhost:8000"
+print('!!!!')
+print (os.getcwd())
+STATICFILES_DIRS = (
+    "scripts/",
+)

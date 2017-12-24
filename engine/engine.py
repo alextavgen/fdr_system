@@ -6,7 +6,9 @@ import datetime
 import cv2
 import json
 
-from fdr_backend.models import FaceEntry
+from fdr_backend.models import Face, FaceEntry
+
+
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
@@ -41,26 +43,51 @@ class Engine():
         face_entry = self.faces[face_uuid]
         face_entry.image = image
 
-    def persist(self, face_uuid, file_path):
-        face_entry_persistent = FaceEntry(uuid=face_uuid,
+    def persist(self, face_uuid, file_path, timestamp):
+        face_persistent = Face(uuid=face_uuid,
                                           face_encoding_json=json.dumps(self.faces[face_uuid].face_encoding.tolist()),
+                                          timestamp=timestamp,
                                           image=file_path)
+        face_persistent.save()
+        logger.debug('Saved new Face')
+
+    def persist_entry(self, face_uuid, file_path, timestamp):
+        face_entry_persistent = FaceEntry(image=file_path, timestamp=timestamp)
+        face_by_uuid = Face.objects.get(uuid=face_uuid)
+        face_entry_persistent.face = face_by_uuid
         face_entry_persistent.save()
         logger.debug('Saved new FaceEntry')
 
     def save_to_file(self, face_uuid, image):
-        todayDate = datetime.datetime.now().strftime("%Y-%d-%m")
-        directory = './detected_faces/' + todayDate
+        directory = 'faces/'
         if not os.path.exists(directory):
             os.makedirs(directory)
 
-        file_path = os.path.join(directory, str(face_uuid)+'.png')
+        file_path = os.path.join(directory, str(face_uuid) + '.png')
         cv2.imwrite(file_path, image)
         return file_path
 
+    def save_to_file_entry(self, face_uuid, image):
+        todayDate = datetime.datetime.now().strftime("%Y-%d-%m")
+        directory = 'detected_faces/' + todayDate
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+
+        file_path = os.path.join(directory, str(face_uuid) + datetime.datetime.now().strftime("%H:%M:%S") + '.png')
+        cv2.imwrite(file_path, image)
+        return file_path
+
+    def __fetch_faces_from_db__(self):
+        faces = Face.objects.all()
+        self.faces = {}
+        for face in faces:
+            self.faces[face.uuid] = FaceEntryInMemory(face.uuid, json.loads(face.face_encoding_json), datetime.datetime.now())
+
+
     def _process_face_recognition_results_(self,face_encodings, timestamp):
-        is_new = None
+        new_uuids = {}
         face_names = {}
+        self.__fetch_faces_from_db__()
         for face_encoding in face_encodings:
             # See if the face is a match for the known face(s)
             # print(face_encoding)
@@ -78,15 +105,14 @@ class Engine():
                 name = "Known"
                 face_names[matched_uuids[0]] = name
                 logger.debug('Matched uuid: ' + str(matched_uuids))
-                is_new = False
             else:
                 uuid_for_face = self.__add_to_known_faces_dict__(face_encoding, timestamp)
 
                 face_names[uuid_for_face] = name
                 logger.debug('Created new uuid: ' + str(uuid_for_face))
-                is_new = True
+                new_uuids[uuid_for_face] = name
 
-        return face_names, is_new
+        return face_names, new_uuids
 
     def __get_match_uuid__(self, match):
         matched_uuid_list = []

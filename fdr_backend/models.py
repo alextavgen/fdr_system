@@ -1,22 +1,29 @@
 from django.db import models
 
+
+class Face(models.Model):
+    uuid = models.CharField(max_length=36, unique=False)
+    face_encoding_json = models.TextField(null=False)
+    image =models.CharField(max_length=200, null=True)
+    timestamp = models.DateTimeField('Date created')
+
+
+    def __str__(self):
+        return self.uuid
+
+
+    def __unicode__(self):
+        return self.uuid
+
+
 # Create your models here.
 class FaceEntry(models.Model):
-    uuid = models.CharField(max_length=36, unique=True)
-    face_encoding_json = models.TextField(null=True)
-    image = models.ImageField('img', upload_to='detected_faces/')
-    def __str__(self):
-        return self.title
+    face = models.ForeignKey(Face, on_delete=models.CASCADE)
+    image =models.CharField(max_length=200, null=False)
+    timestamp = models.DateTimeField('Date detected')
 
-
-
-
-class Event(models.Model):
-    faces = models.ManyToManyField(FaceEntry)
-    timestamp = models.DateTimeField('date published')
-
-    def __str__(self):
-        return self.timestamp
+    def __unicode__(self):
+        return self.timestamp.strftime("%Y-%d-%m %H:%M:%S")
 
     class Meta:
         ordering = ('timestamp',)

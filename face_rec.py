@@ -3,10 +3,9 @@ import time
 
 import cv2
 import face_recognition
+import datetime
 
-print (os.getcwd())
-
-
+ENTRY_THRESHOLD = 3
 
 def main():
     import engine.engine as engine
@@ -16,17 +15,22 @@ def main():
     # Attach engine
 
 
-    # Initialize some variables
+    # Initialize data structures
+    entry_written = {}
+    # Face locations on the frame
     face_locations = []
+    # Face encodings on the frame
     face_encodings = []
     face_names = []
     process_this_frame = True
 
     try:
         while True:
+            new_uuids = {}
             # Grab a single frame of video
             ret, frame = video_capture.read()
 
+            timestamp = datetime.datetime.now()
             # Resize frame of video to 1/4 size for faster face recognition processing
             small_frame = cv2.resize(frame, (0, 0), fx=0.25, fy=0.25)
 
@@ -36,8 +40,7 @@ def main():
                 face_locations = face_recognition.face_locations(small_frame)
                 face_encodings = face_recognition.face_encodings(small_frame, face_locations)
 
-                timestamp = time.time()
-                face_names, is_new = engine.handle(face_encodings,timestamp)
+                face_names, new_uuids = engine.handle(face_encodings,timestamp)
 
             process_this_frame = not process_this_frame
 
@@ -62,10 +65,23 @@ def main():
                 cv2.imshow(name + str(face_uuid), crop_img)
 
                 #print((top, right, bottom, left))
-                if is_new:
+                if face_uuid in new_uuids:
                     #SAVE FACE
                     file_path = engine.save_to_file(face_uuid, crop_img)
-                    engine.persist(face_uuid, file_path)
+                    engine.persist(face_uuid, file_path, timestamp)
+
+                save_entry = False
+
+                if not face_uuid in entry_written:
+                    save_entry = True
+                elif timestamp - entry_written[face_uuid] > datetime.timedelta(seconds=ENTRY_THRESHOLD):
+                    save_entry = True
+
+                if save_entry:
+                    file_path = engine.save_to_file_entry(face_uuid, frame)
+                    engine.persist_entry(face_uuid, file_path, timestamp)
+                    entry_written[face_uuid] = timestamp
+
             # Display the resulting image
             cv2.imshow('Video', frame)
 

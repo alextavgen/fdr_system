@@ -7,3 +7,6 @@ from .models import  FaceEntry, Face
 
 class FaceList(ListView):
     model = Face
+
+class FaceEntryList(ListView):
+    model = FaceEntry

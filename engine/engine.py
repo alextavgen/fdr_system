@@ -13,7 +13,7 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
-TOLERANCE = 0.6
+TOLERANCE = 0.8
 
 
 class FaceEntryInMemory():
@@ -79,7 +79,7 @@ class Engine():
 
     def __fetch_faces_from_db__(self):
         faces = Face.objects.all()
-        self.faces = {}
+        #self.faces = {}
         for face in faces:
             self.faces[face.uuid] = FaceEntryInMemory(face.uuid, json.loads(face.face_encoding_json), datetime.datetime.now())
 
@@ -99,8 +99,9 @@ class Engine():
             is_matched, matched_uuids = self.__get_match_uuid__(match)
 
             if (len(matched_uuids)>1):
-                logger.warning('Match more than one face, set tolerance at lower level ')
+                logger.debug('Match more than one face')
 
+            matched_uuids.sort()
             if is_matched:
                 name = "Known"
                 face_names[matched_uuids[0]] = name

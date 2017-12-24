@@ -1,0 +1,26 @@
+
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+    <ul>
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th scope="col">Face Entry</th>
+              <th scope="col">Photo link</th>
+              <th scope="col">Timestamp</th>
+            </tr>
+          </thead>
+          <tbody>
+                {% for face_entry in object_list %}
+                <tr class="table-active">
+                      <th scope="row">{{ face_entry.face }}</th>
+                      <td><img class="card-img" src="{% static face_entry.image %}"/></td>
+                      <td>{{ face_entry.timestamp }}</td>
+                </tr>
+                {% endfor %}
+          </tbody>
+        </table>
+
+    </ul>
+{% endblock %}

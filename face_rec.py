@@ -1,11 +1,13 @@
 import os
 import time
-
+import pytz
 import cv2
 import face_recognition
 import datetime
+from django.utils import timezone
 
-ENTRY_THRESHOLD = 3
+ENTRY_THRESHOLD = 10
+DETECTED_THRESHOLD = 6
 
 def main():
     import engine.engine as engine
@@ -17,6 +19,11 @@ def main():
 
     # Initialize data structures
     entry_written = {}
+
+    # Check for some uuids were collected
+    new_face_counts={}
+
+    detected_face_counts = {}
     # Face locations on the frame
     face_locations = []
     # Face encodings on the frame
@@ -30,7 +37,7 @@ def main():
             # Grab a single frame of video
             ret, frame = video_capture.read()
 
-            timestamp = datetime.datetime.now()
+            timestamp = timezone.now()
             # Resize frame of video to 1/4 size for faster face recognition processing
             small_frame = cv2.resize(frame, (0, 0), fx=0.25, fy=0.25)
 
@@ -62,13 +69,13 @@ def main():
                 cv2.putText(frame, str(face_uuid), (left + 6, bottom - 6), font, 1.0, (255, 255, 255), 1)
 
                 crop_img = frame[top:bottom, left:right]
-                cv2.imshow(name + str(face_uuid), crop_img)
+                #cv2.imshow(name + str(face_uuid), crop_img)
 
                 #print((top, right, bottom, left))
                 if face_uuid in new_uuids:
-                    #SAVE FACE
-                    file_path = engine.save_to_file(face_uuid, crop_img)
-                    engine.persist(face_uuid, file_path, timestamp)
+                    if not face_uuid in new_face_counts:
+                        new_face_counts[face_uuid] = 1
+
 
                 save_entry = False
 
@@ -77,10 +84,24 @@ def main():
                 elif timestamp - entry_written[face_uuid] > datetime.timedelta(seconds=ENTRY_THRESHOLD):
                     save_entry = True
 
-                if save_entry:
+                if face_uuid in detected_face_counts:
+                    detected_face_counts[face_uuid] += 1
+                else:
+                    detected_face_counts[face_uuid] = 1
+
+                if (face_uuid in new_face_counts) and (detected_face_counts[face_uuid]>DETECTED_THRESHOLD):
+                    file_path = engine.save_to_file(face_uuid, crop_img)
+                    #engine.persist(face_uuid, file_path, timestamp)
+                    print('FACE WRITTEN')
+                    del new_face_counts[face_uuid]
+
+
+                if save_entry and detected_face_counts[face_uuid]>DETECTED_THRESHOLD:
                     file_path = engine.save_to_file_entry(face_uuid, frame)
-                    engine.persist_entry(face_uuid, file_path, timestamp)
+                    #engine.persist_entry(face_uuid, file_path, timestamp)
+                    print('ENTRY WRITTEN')
                     entry_written[face_uuid] = timestamp
+                    del detected_face_counts[face_uuid]
 
             # Display the resulting image
             cv2.imshow('Video', frame)

@@ -31,7 +31,6 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    'bsct',
     'fdr_backend.apps.FdrBackendConfig',
     'django.contrib.admin',
     'django.contrib.auth',

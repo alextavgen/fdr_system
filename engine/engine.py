@@ -12,6 +12,7 @@ from fdr_backend.models import Face, FaceEntry
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
+# Tolerance according distance between face_encodings
 
 TOLERANCE = 0.8
 

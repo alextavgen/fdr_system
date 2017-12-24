@@ -1,4 +1,6 @@
 from django.db import models
+import django_filters
+
 
 
 class Face(models.Model):
@@ -16,6 +18,8 @@ class Face(models.Model):
         return self.uuid
 
 
+
+
 # Create your models here.
 class FaceEntry(models.Model):
     face = models.ForeignKey(Face, on_delete=models.CASCADE)
@@ -27,4 +31,9 @@ class FaceEntry(models.Model):
 
     class Meta:
         ordering = ('timestamp',)
+
+class FaceEntryFilter(django_filters.FilterSet):
+    class Meta:
+        model = FaceEntry
+        fields = ['timestamp', 'face', ]
 

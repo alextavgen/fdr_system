@@ -91,15 +91,13 @@ def main():
 
                 if (face_uuid in new_face_counts) and (detected_face_counts[face_uuid]>DETECTED_THRESHOLD):
                     file_path = engine.save_to_file(face_uuid, crop_img)
-                    #engine.persist(face_uuid, file_path, timestamp)
-                    print('FACE WRITTEN')
+                    engine.persist(face_uuid, file_path, timestamp)
                     del new_face_counts[face_uuid]
 
 
                 if save_entry and detected_face_counts[face_uuid]>DETECTED_THRESHOLD:
                     file_path = engine.save_to_file_entry(face_uuid, frame)
-                    #engine.persist_entry(face_uuid, file_path, timestamp)
-                    print('ENTRY WRITTEN')
+                    engine.persist_entry(face_uuid, file_path, timestamp)
                     entry_written[face_uuid] = timestamp
                     del detected_face_counts[face_uuid]
 

@@ -1,26 +1,48 @@
+{% extends 'base.html' %}
 
-{% extends "base.html" %}
 {% load static %}
-{% block content %}
-    <ul>
-        <table class="table table-hover">
-          <thead>
-            <tr>
-              <th scope="col">Face Entry</th>
-              <th scope="col">Photo link</th>
-              <th scope="col">Timestamp</th>
-            </tr>
-          </thead>
-          <tbody>
-                {% for face_entry in object_list %}
-                <tr class="table-active">
-                      <th scope="row">{{ face_entry.face }}</th>
-                      <td><img class="card-img" src="{% static face_entry.image %}"/></td>
-                      <td>{{ face_entry.timestamp }}</td>
-                </tr>
-                {% endfor %}
-          </tbody>
-        </table>
+{% load widget_tweaks %}
 
-    </ul>
+{% block content %}
+  <form method="get">
+    <div class="well">
+      <h4 style="margin-top: 0">Filter</h4>
+      <div class="row">
+        <div class="form-group col-sm-4 col-md-3">
+          {{ filter.form.timestamp.label_tag }}
+          {% render_field filter.form.timestamp class="form-control" %}
+        </div>
+        <div class="form-group col-sm-4 col-md-3">
+          {{ filter.form.face.label_tag }}
+          {% render_field filter.form.face class="form-control" %}
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary">
+        <span class="glyphicon glyphicon-search"></span> Search
+      </button>
+    </div>
+  </form>
+
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th>UUID</th>
+        <th>Face</th>
+        <th>Timestamp</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for face_entry in filter.qs %}
+        <tr class="table-active">
+            <th scope="row">{{ face_entry.face }}</th>
+            <td><img class="card-img" src="{% static face_entry.image %}"/></td>
+            <td>{{ face_entry.timestamp }}</td>
+        </tr>
+      {% empty %}
+        <tr>
+          <td colspan="5">No data</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
 {% endblock %}

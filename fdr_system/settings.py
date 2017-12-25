@@ -31,6 +31,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'django_filters',
     'widget_tweaks',
     'fdr_backend.apps.FdrBackendConfig',
     'django.contrib.admin',

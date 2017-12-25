@@ -1,6 +1,9 @@
 from django.db import models
 import django_filters
-
+from django_filters import DateFromToRangeFilter
+import django_filters.widgets
+from django_filters.widgets import RangeWidget
+from django import forms
 
 
 class Face(models.Model):
@@ -33,7 +36,8 @@ class FaceEntry(models.Model):
         ordering = ('timestamp',)
 
 class FaceEntryFilter(django_filters.FilterSet):
+    distinct_face = django_filters.CharFilter(distinct=True)
+    timestamp =  DateFromToRangeFilter(widget=RangeWidget(attrs={'placeholder': 'YYYY/MM/DD'}))
     class Meta:
         model = FaceEntry
-        fields = ['timestamp', 'face', ]
-
+        fields = ['face', 'timestamp', 'distinct_face',]

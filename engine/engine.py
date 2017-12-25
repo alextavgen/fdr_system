@@ -102,7 +102,7 @@ class Engine():
             if (len(matched_uuids)>1):
                 logger.debug('Match more than one face')
 
-            matched_uuids.sort()
+            #matched_uuids.sort()
             if is_matched:
                 name = "Known"
                 face_names[matched_uuids[0]] = name

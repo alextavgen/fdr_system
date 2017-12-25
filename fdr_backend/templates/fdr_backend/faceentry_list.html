@@ -39,6 +39,11 @@
 <div class="row col-sm-4 col-md-3">
   <h2> Unique Faces:{{ distinct }}</h2>
 </div>
+{% if graph %}
+<div style="width:600;height:500">
+{{ graph|safe }}
+</div>
+{% endif %}
   <table class="table table-bordered">
     <thead>
       <tr>
@@ -48,7 +53,7 @@
       </tr>
     </thead>
     <tbody>
-      {% for face_entry in filter.qs %}
+      {% for face_entry in entries %}
         <tr class="table-active">
             <th scope="row">{{ face_entry.face }}</th>
             <td><img class="card-img" src="{% static face_entry.image %}"/></td>
@@ -61,4 +66,22 @@
       {% endfor %}
     </tbody>
   </table>
+
+<div class="pagination">
+    <span class="step-links">
+        {% if entries.has_previous %}
+            <a class = "btn btn-info" href="?page=1">&laquo; first</a>
+            <a class = "btn btn-info" href="?page={{ entries.previous_page_number }}">previous</a>
+        {% endif %}
+
+        <span class="current">
+            Page {{ entries.number }} of {{ entries.paginator.num_pages }}.
+        </span>
+
+        {% if entries.has_next %}
+            <a class = "btn btn-info" href="?page={{ entries.next_page_number }}">next</a>
+            <a class = "btn btn-info" href="?page={{ entries.paginator.num_pages }}">last &raquo;</a>
+        {% endif %}
+    </span>
+</div>
 {% endblock %}

@@ -102,7 +102,7 @@ def main():
                     del detected_face_counts[face_uuid]
 
             # Display the resulting image
-            #cv2.imshow('Video', frame)
+            cv2.imshow('Video', frame)
 
 
         # Release handle to the webcam

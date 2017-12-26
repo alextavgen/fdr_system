@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 # Tolerance according distance between face_encodings
 
-TOLERANCE = 0.8
+TOLERANCE = 0.6
 
 
 class FaceEntryInMemory():
@@ -95,14 +95,27 @@ class Engine():
             match = face_recognition.compare_faces(
                                 [face_entry.face_encoding for face_entry in self.__get_known_faces_list__()],
                                 face_encoding, tolerance=TOLERANCE)
-            name = "Unknown"
+
+            distances = face_recognition.api.face_distance(
+                                [face_entry.face_encoding for face_entry in self.__get_known_faces_list__()],
+                                face_encoding)
 
             is_matched, matched_uuids = self.__get_match_uuid__(match)
+
+            minimum = None
+
+            if len(distances)>0:
+                minimum = self.__get_known_faces_list__()[distances.argmin()]
+
+            name = "Unknown"
+
+
 
             if (len(matched_uuids)>1):
                 logger.debug('Match more than one face')
 
-            #matched_uuids.sort()
+            if is_matched:
+                matched_uuids = [minimum.face_uuid if minimum else matched_uuids[0]]
             if is_matched:
                 name = "Known"
                 face_names[matched_uuids[0]] = name
@@ -126,7 +139,7 @@ class Engine():
         return is_matched, matched_uuid_list
 
     def __add_to_known_faces_dict__(self, face_encoding, timestamp):
-        face_uuid = uuid.uuid4()
+        face_uuid = str(uuid.uuid4())
         self.faces[face_uuid] = FaceEntryInMemory(face_uuid, face_encoding, timestamp)
         return face_uuid
 

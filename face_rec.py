@@ -13,6 +13,8 @@ def main():
     import engine.engine as engine
     engine = engine.Engine()
     video_capture = cv2.VideoCapture(0)
+    if not (video_capture.isOpened()):
+        print("Fail")
 
     # Attach engine
 
@@ -36,6 +38,8 @@ def main():
             new_uuids = {}
             # Grab a single frame of video
             ret, frame = video_capture.read()
+            if not ret:
+                continue
 
             timestamp = timezone.now()
             # Resize frame of video to 1/4 size for faster face recognition processing

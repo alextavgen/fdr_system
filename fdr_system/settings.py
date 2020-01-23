@@ -132,5 +132,5 @@ STATIC_ROOT = "localhost:8000"
 print('!!!!')
 print (os.getcwd())
 STATICFILES_DIRS = (
-    "scripts/",
+    "scripts/", "./"
 )
